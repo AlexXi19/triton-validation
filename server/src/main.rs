@@ -1,3 +1,5 @@
+mod k8s;
+
 fn main() {
-    println!("Hello, world!");
+    k8s::scheduler::schedule();
 }
