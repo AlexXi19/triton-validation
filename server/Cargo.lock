@@ -2023,11 +2023,14 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
+ "hyper",
  "k8s-openapi",
  "kube",
  "lazy_static",
+ "once_cell",
  "serde_json",
  "tokio",
+ "tower",
  "tracing",
  "tracing-subscriber",
 ]
