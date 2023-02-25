@@ -1,11 +1,11 @@
-use crate::k8s::scheduler::create_validation_environment;
-use actix_web::{get, post, HttpResponse, Responder};
+use crate::clients::http_client::AppData;
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
 use tracing::info;
 
 #[post("scheduler")]
-pub async fn create() -> impl Responder {
+pub async fn create(_req: HttpRequest, app_data: web::Data<AppData>) -> impl Responder {
     info!("Scheduler service called");
-    let name = "test".to_string();
-    create_validation_environment(name).await;
+    app_data.kube_client.health().await.unwrap();
+
     HttpResponse::Ok()
 }

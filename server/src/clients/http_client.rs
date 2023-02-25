@@ -1,14 +1,24 @@
+use std::sync::Arc;
+
 use crate::service;
-use actix_web::{get, middleware::Logger, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
 use tracing::info;
 
-pub async fn start(port: String) -> Result<()> {
-    let port = port.parse::<u16>()?;
+use super::kube_client::KubeClient;
 
-    let server = HttpServer::new(|| {
+pub struct AppData {
+    pub kube_client: Arc<KubeClient>,
+}
+
+pub async fn start(port: String, state: AppData) -> Result<()> {
+    let port = port.parse::<u16>()?;
+    let state = web::Data::new(state);
+
+    let server = HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
+            .app_data(state.clone())
             .service(welcome)
             .service(health)
             .service(service::scheduler::create)
