@@ -3,6 +3,7 @@ mod clients;
 mod env;
 mod k8s;
 mod service;
+mod utils;
 
 use crate::clients::kube_client::KubeClient;
 use anyhow::Result;
