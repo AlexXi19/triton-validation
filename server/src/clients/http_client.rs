@@ -5,10 +5,11 @@ use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Res
 use anyhow::Result;
 use tracing::info;
 
-use super::kube_client::KubeClient;
+use super::{kube_client::KubeClient, rabbitmq_client::RabbitMQClient};
 
 pub struct AppData {
     pub kube_client: Arc<KubeClient>,
+    pub validation_queue_client: Arc<RabbitMQClient>,
 }
 
 pub async fn start(port: String, state: AppData) -> Result<()> {
