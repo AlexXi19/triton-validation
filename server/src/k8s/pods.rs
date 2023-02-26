@@ -12,7 +12,7 @@ use serde_json::json;
 
 use super::constants::TRITON_IMAGE;
 
-pub async fn validation_service(name: String) -> Service {
+pub fn validation_service(name: String) -> Service {
     let validation_service = Service {
         metadata: ObjectMeta {
             name: Some(name),
@@ -44,7 +44,7 @@ pub async fn validation_service(name: String) -> Service {
     validation_service
 }
 
-pub async fn validation_pod(name: String) -> Pod {
+pub fn validation_pod(name: String) -> Pod {
     let triton_container = Container {
         name: "triton".to_string(),
         image: Some(TRITON_IMAGE.to_string()),
@@ -103,7 +103,7 @@ pub async fn validation_pod(name: String) -> Pod {
     pod
 }
 
-pub async fn test_pod(name: String) -> Result<Pod> {
+pub fn test_pod(name: String) -> Result<Pod> {
     let empty_pod = serde_json::from_value(json!({
         "apiVersion": "v1",
         "kind": "Pod",
@@ -123,7 +123,7 @@ pub async fn test_pod(name: String) -> Result<Pod> {
     Ok(empty_pod)
 }
 
-pub async fn test_incorrect_pod(name: String) -> Result<Pod> {
+pub fn test_incorrect_pod(name: String) -> Result<Pod> {
     let empty_pod = serde_json::from_value(json!({
         "apiVersion": "v1",
         "kind": "Pod",

@@ -58,7 +58,7 @@ impl RabbitMQClient {
             .queue_bind(
                 queue_name,
                 dl_queue_name.as_str(),
-                "my-routing-key",
+                "validation-dead-letter",
                 QueueBindOptions::default(),
                 FieldTable::default(),
             )

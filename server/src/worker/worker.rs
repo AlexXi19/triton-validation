@@ -12,7 +12,7 @@ use crate::{
         kube_client::KubeClient,
         rabbitmq_client::{RabbitMQClient, ValidationMessage},
     },
-    k8s::pods::{test_incorrect_pod, test_pod},
+    k8s::pods::{test_incorrect_pod, test_pod, validation_pod},
 };
 
 pub struct Worker {
@@ -26,12 +26,8 @@ impl Worker {
     }
 
     pub async fn process_job_start(&self, message: ValidationMessage) -> Result<()> {
-        info!("Worker {} received message: {}", self.id, message.id);
-
-        let p = test_pod(format!("{}-validation", message.name)).await?;
-        self.kube_client.create_pod_blocking(p).await.unwrap();
-
-        info!("Worker {} processed message successfully!", self.id);
+        let p = validation_pod(message.name);
+        self.kube_client.create_pod(p).await?;
         Ok(())
     }
 }

@@ -26,14 +26,14 @@ macro_rules! unwrap_with_nack {
     };
     ($expr:expr, $channel:expr, $delivery_tag:expr, $error:expr) => {
         match $expr {
-            Err(_) => {
+            Err(e) => {
                 $channel
                     .nack_to_dlq($delivery_tag)
                     .await
                     .unwrap_or_else(|e| {
                         error!("Error nacking message to DLQ: {:?}", e);
                     });
-                error!($error);
+                error!("{:?}: {:?}", $error, e);
                 continue;
             }
             Ok(val) => val,
