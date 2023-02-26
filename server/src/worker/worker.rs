@@ -6,8 +6,12 @@ use lapin::{
 };
 use std::{sync::Arc, time::Duration};
 use tracing::info;
+use uuid::Uuid;
 
-use crate::clients::{kube_client::KubeClient, rabbitmq_client::RabbitMQClient};
+use crate::{
+    clients::{kube_client::KubeClient, rabbitmq_client::RabbitMQClient},
+    k8s::pods::{test_incorrect_pod, test_pod},
+};
 
 pub struct Worker {
     id: u16,
@@ -35,6 +39,18 @@ impl Worker {
             let delivery = delivery.expect("error in consumer");
             let message = std::str::from_utf8(&delivery.data)?;
             info!("Worker {} received message: {}", self.id, message);
+
+            let id = Uuid::new_v4().to_string();
+            let p = test_incorrect_pod(format!("test-mode-{}", id)).await?;
+            self.kube_client.create_pod(p).await?;
+            self.kube_client.get_pod("nginx").await.unwrap();
+
+            // Sleep for 7 secs
+            tokio::time::sleep(Duration::from_secs(7)).await;
+            // self.kube_client.get_pod("hi").await.unwrap();
+
+            // Ack
+            delivery.ack(BasicAckOptions::default()).await?
         }
         Ok(())
     }

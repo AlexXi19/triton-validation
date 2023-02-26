@@ -5,15 +5,15 @@ use k8s_openapi::api::core::v1::Pod;
 use kube::{
     api::PostParams,
     core::ObjectMeta,
-    runtime::wait::{await_condition, conditions::is_pod_running},
+    runtime::{
+        wait::{await_condition, conditions::is_pod_running},
+        Controller,
+    },
     Api, Client, ResourceExt,
 };
 use kube::{client::ConfigExt, Config};
 use serde_json::json;
-use tower::ServiceBuilder;
 use tracing::info;
-
-use crate::k8s::pods::validation_server_pod;
 
 pub struct KubeClient {
     client: Client,
@@ -23,17 +23,15 @@ pub struct KubeClient {
 
 impl KubeClient {
     pub async fn new(config_path: String) -> Result<Self> {
-        let kubeconfig_path = Path::new(config_path.as_str());
-        // let config = Config::from_kubeconfig(&kubeconfig_path)?;
+        // let config = Config::from_kubeconfig(&)?;
         let config = Config::infer().await?;
         let namespace = config.default_namespace.clone();
-        let service = ServiceBuilder::new()
-            .layer(config.base_uri_layer())
-            .option_layer(config.auth_layer()?)
-            .service(hyper::Client::new());
-        let client = Client::new(service, namespace.clone());
+        let client = Client::try_default().await?;
 
-        info!("Kubernetes client initialized");
+        info!(
+            "Kubernetes client initialized with namespace: {}, cluster url: {:?}, and context: {:?}",
+            namespace, config.cluster_url, "Unknown context"
+        );
         Ok(KubeClient {
             client,
             config,
@@ -46,29 +44,30 @@ impl KubeClient {
         Ok(())
     }
 
-    pub async fn test_create_pod(&self) -> Result<()> {
+    pub async fn get_pod(&self, name: &str) -> Result<Pod> {
+        let client = self.client.clone();
+        let pods: Api<Pod> = Api::default_namespaced(client);
+        let pod = pods.get(name).await?;
+
+        info!("Pod {} found", name);
+        Ok(pod)
+    }
+
+    pub async fn create_pod(&self, p: Pod) -> Result<()> {
         let client = self.client.clone();
         let pods: Api<Pod> = Api::default_namespaced(client);
 
-        // Create Pod blog
-        info!("Creating Pod instance blog");
-        let p = validation_server_pod("hi".to_ascii_lowercase()).await?;
         let pp = PostParams::default();
-        match pods.create(&pp, &p).await {
-            Ok(o) => {
-                let name = o.name_any();
-                assert_eq!(p.name_any(), name);
-                info!("Created {}", name);
-            }
-            Err(kube::Error::Api(ae)) => assert_eq!(ae.code, 409), // if you skipped delete, for instance
-            Err(e) => return Err(e.into()),                        // any other case is probably bad
-        }
+
+        pods.create(&pp, &p).await?;
+        // Create Pod blog
+        info!("Creating Pod");
 
         // Watch it phase for a few seconds
-        let establish = await_condition(pods.clone(), "blog", is_pod_running());
-        let _ = tokio::time::timeout(std::time::Duration::from_secs(15), establish).await?;
+        // let establish = await_condition(pods.clone(), "hi", is_pod_running());
+        // let _ = tokio::time::timeout(std::time::Duration::from_secs(15), establish).await?;
 
-        info!("Pod test is running");
+        info!("Pod is running");
         Ok(())
     }
 }

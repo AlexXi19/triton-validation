@@ -7,9 +7,10 @@ use lapin::{
 use serde::Serialize;
 use tracing::info;
 
+#[derive(Serialize)]
 pub struct ValidationMessage {
     pub id: String,
-    pub message: String,
+    pub name: String,
 }
 pub struct RabbitMQClient {
     pub connection: Connection,
@@ -49,7 +50,10 @@ impl RabbitMQClient {
             )
             .await?;
 
-        info!("Created consumer for queue {}", self.validation_queue_name);
+        info!(
+            "Created consumer for queue with name: {}",
+            self.validation_queue_name
+        );
         return Ok(consumer);
     }
 

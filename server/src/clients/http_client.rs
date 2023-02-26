@@ -22,7 +22,7 @@ pub async fn start(port: String, state: AppData) -> Result<()> {
             .app_data(state.clone())
             .service(welcome)
             .service(health)
-            .service(service::scheduler::create)
+            .service(service::job::create_job)
     })
     .bind(("127.0.0.1", port))?
     .run();
