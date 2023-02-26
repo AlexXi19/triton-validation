@@ -53,7 +53,7 @@ impl KubeClient {
         Ok(pod)
     }
 
-    pub async fn create_pod(&self, p: Pod) -> Result<()> {
+    pub async fn create_pod_blocking(&self, p: Pod) -> Result<()> {
         let client = self.client.clone();
         let pods: Api<Pod> = Api::default_namespaced(client);
 
@@ -62,12 +62,10 @@ impl KubeClient {
         pods.create(&pp, &p).await?;
         // Create Pod blog
         info!("Creating Pod");
+        let establish = await_condition(pods.clone(), "blog", is_pod_running());
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(15), establish).await?;
 
-        // Watch it phase for a few seconds
-        // let establish = await_condition(pods.clone(), "hi", is_pod_running());
-        // let _ = tokio::time::timeout(std::time::Duration::from_secs(15), establish).await?;
-
-        info!("Pod is running");
+        info!("Pod {} created", p.name_any());
         Ok(())
     }
 }
