@@ -2,7 +2,7 @@ use anyhow::Result;
 use futures::io::empty;
 use k8s_openapi::{
     api::core::v1::{
-        Container, ContainerPort, Pod, PodSpec, Service, ServicePort, ServiceSpec, Volume,
+        Container, ContainerPort, EnvVar, Pod, PodSpec, Service, ServicePort, ServiceSpec, Volume,
         VolumeMount,
     },
     apimachinery::pkg::util::intstr::IntOrString,
@@ -44,15 +44,11 @@ pub fn validation_service(name: String) -> Service {
     validation_service
 }
 
-pub fn validation_pod(name: String) -> Pod {
+pub fn validation_pod(name: String, job_id: String) -> Pod {
     let triton_container = Container {
         name: "triton".to_string(),
         image: Some(TRITON_IMAGE.to_string()),
-        command: Some(vec![
-            "/bin/sh".to_string(),
-            "-c".to_string(),
-            "sleep 100000".to_string(),
-        ]),
+        command: Some(vec!["tritonserver".to_string()]),
         args: Some(vec![
             "--model-repository=/models".to_string(),
             "--grpc-port=8000".to_string(),
@@ -82,6 +78,18 @@ pub fn validation_pod(name: String) -> Pod {
         }]),
         ..Default::default()
     };
+
+    // TODO: Complete this pod
+    let validation_container = Container {
+        name: "validation".to_string(),
+        env: Some(vec![EnvVar {
+            name: "VALIDATION_JOB_ID".to_string(),
+            value: Some(job_id),
+            ..Default::default()
+        }]),
+        ..Default::default()
+    };
+
     let triton_volume = Volume {
         name: "model-repository".to_string(),
         ..Default::default()

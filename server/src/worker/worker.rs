@@ -26,7 +26,7 @@ impl Worker {
     }
 
     pub async fn process_job_start(&self, message: ValidationMessage) -> Result<()> {
-        let p = validation_pod(message.name);
+        let p = validation_pod(message.name, message.id);
         self.kube_client.create_pod(p).await?;
         Ok(())
     }

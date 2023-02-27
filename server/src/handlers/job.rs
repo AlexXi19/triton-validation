@@ -21,9 +21,14 @@ pub async fn create_job(
     info!("Scheduler service called");
     let rabbitmq_client = app_data.validation_queue_client.clone();
     let job_name = params.name.clone();
+    let job_id = Uuid::new_v4().to_string();
+
+    // TODO: validate job name
+
+    // TODO: Define job config, get job config, and persist job config for consumption by validation server
 
     let job = ValidationMessage {
-        id: Uuid::new_v4().to_string(),
+        id: job_id,
         name: job_name,
     };
 

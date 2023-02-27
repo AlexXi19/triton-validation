@@ -1,8 +1,8 @@
 mod clients;
 mod env;
+mod handlers;
 mod k8s;
 mod server_factory;
-mod service;
 mod utils;
 mod worker;
 

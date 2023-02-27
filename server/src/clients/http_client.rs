@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::service;
+use crate::handlers;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
 use tracing::info;
@@ -22,7 +22,7 @@ pub async fn start(port: String, state: AppData) -> Result<()> {
             .app_data(state.clone())
             .service(welcome)
             .service(health)
-            .service(service::job::create_job)
+            .service(handlers::job::create_job)
     })
     .bind(("127.0.0.1", port))?
     .run();
