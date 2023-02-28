@@ -1,0 +1,18 @@
+name: "echo"
+platform: "python"
+max_batch_size: 8
+
+input [
+  {
+    name: "INPUT0"
+    data_type: TYPE_INT8
+    dims: [ 16 ]
+  }
+]
+output [
+  {
+    name: "OUTPUT0"
+    data_type: TYPE_INT8
+    dims: [ 16  ]
+  }
+]
