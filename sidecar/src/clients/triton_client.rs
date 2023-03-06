@@ -29,7 +29,6 @@ impl TritonClient {
 
     pub async fn live(&self) -> Result<()> {
         let live_endpoint = self.get_url_from_base("/v2/health/live")?;
-        info!("live_endpoint: {}", live_endpoint);
         let response = self.http_client.get(live_endpoint).send().await?;
         if response.status().is_success() {
             Ok(())
@@ -40,7 +39,6 @@ impl TritonClient {
 
     pub async fn ready(&self) -> Result<()> {
         let ready_endpoint = self.get_url_from_base("/v2/health/ready")?;
-        info!("ready_endpoint: {}", ready_endpoint);
         let response = self.http_client.get(ready_endpoint).send().await?;
         if response.status().is_success() {
             Ok(())
@@ -51,10 +49,9 @@ impl TritonClient {
 
     pub async fn wait_for_server_ready(&self) -> Result<()> {
         repeat_until_success(|| self.ready(), Duration::from_secs(5)).await?;
-        info!("Server is ready, waiting for it to be live...");
+        info!("The Triton server is ready, waiting for it to be live...");
         repeat_until_success(|| self.live(), Duration::from_secs(5)).await?;
-        info!("Server is live and ready to receive requests!");
-
+        info!("The Triton server is live and ready to receive requests!");
         Ok(())
     }
 }

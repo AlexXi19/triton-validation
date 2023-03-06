@@ -3,6 +3,7 @@ use anyhow::Result;
 pub struct Variables {
     pub job_id: String,
     pub triton_url: String,
+    pub server_url: String,
 }
 
 impl Variables {
@@ -10,6 +11,7 @@ impl Variables {
         Ok(Self {
             job_id: get_env_var("VALIDATION_JOB_ID", Some(""))?,
             triton_url: get_env_var("TRITON_URL", Some("http://localhost:8001"))?,
+            server_url: get_env_var("SERVER_URL", Some("http://localhost:8080"))?,
         })
     }
 }

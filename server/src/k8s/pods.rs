@@ -10,6 +10,8 @@ use k8s_openapi::{
 use kube::{api::PostParams, core::ObjectMeta, Api, Client};
 use serde_json::json;
 
+use crate::handlers::job;
+
 use super::constants::TRITON_IMAGE;
 
 pub fn validation_service(name: String) -> Service {
@@ -76,15 +78,16 @@ pub fn validation_pod(name: String, job_id: String) -> Pod {
             mount_path: "/models".to_string(),
             ..Default::default()
         }]),
+        // TODO: Add live/readiness probes
         ..Default::default()
     };
 
-    // TODO: Complete this pod
+    // TODO: Complete this container
     let validation_container = Container {
         name: "validation".to_string(),
         env: Some(vec![EnvVar {
             name: "VALIDATION_JOB_ID".to_string(),
-            value: Some(job_id),
+            value: Some(job_id.clone()),
             ..Default::default()
         }]),
         ..Default::default()
@@ -98,6 +101,7 @@ pub fn validation_pod(name: String, job_id: String) -> Pod {
     let pod = Pod {
         metadata: ObjectMeta {
             name: Some(name),
+            labels: Some(vec![("job-id".to_string(), job_id)].into_iter().collect()),
             ..Default::default()
         },
         spec: Some(PodSpec {

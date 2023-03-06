@@ -3,7 +3,7 @@ use std::{path::Path, sync::Arc};
 use anyhow::Result;
 use k8s_openapi::api::core::v1::Pod;
 use kube::{
-    api::PostParams,
+    api::{ListParams, PostParams},
     core::ObjectMeta,
     runtime::{
         wait::{await_condition, conditions::is_pod_running},
@@ -13,7 +13,7 @@ use kube::{
 };
 use kube::{client::ConfigExt, Config};
 use serde_json::json;
-use tracing::info;
+use tracing::{debug, info};
 
 pub struct KubeClient {
     client: Client,
@@ -66,7 +66,7 @@ impl KubeClient {
         info!("Pod {} created", pod_name);
         Ok(())
     }
-    
+
     pub async fn create_pod_blocking(&self, p: Pod) -> Result<()> {
         let client = self.client.clone();
         let pods: Api<Pod> = Api::default_namespaced(client);
@@ -82,5 +82,32 @@ impl KubeClient {
 
         info!("Pod {} created", pod_name);
         Ok(())
+    }
+
+    pub async fn delete_pod_blocking(&self, name: &str) -> Result<()> {
+        let client = self.client.clone();
+        let pods: Api<Pod> = Api::default_namespaced(client);
+
+        info!("Deleting Pod");
+        pods.delete(name, &Default::default()).await?;
+
+        info!("Pod {} deleted", name);
+        Ok(())
+    }
+
+    pub async fn get_pods_from_label(&self, label: &str, label_value: &str) -> Result<Vec<Pod>> {
+        let client = self.client.clone();
+        let pods: Api<Pod> = Api::default_namespaced(client);
+
+        let label_selector = format!("{}={}", label, label_value);
+        let list_params = ListParams {
+            label_selector: Some(label_selector),
+            ..Default::default()
+        };
+        let pod_list = pods.list(&list_params).await?.items;
+
+        debug!("Pods found: {:?}", pod_list.len());
+
+        Ok(pod_list)
     }
 }

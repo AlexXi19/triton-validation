@@ -3,7 +3,13 @@ macro_rules! unwrap_or_return_error {
     ($value:expr, $error:expr, $message:expr) => {
         match $value {
             Ok(v) => v,
-            Err(_) => return $error.body($message),
+            Err(e) => {
+                return {
+                    let err = format!("{}: {:?}", $message, e);
+                    error!(err);
+                    $error.body(err)
+                }
+            }
         }
     };
 }
