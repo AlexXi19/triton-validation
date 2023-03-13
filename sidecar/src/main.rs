@@ -5,6 +5,7 @@ use crate::clients::triton_client;
 
 pub mod clients;
 pub mod env;
+pub mod goose;
 pub mod utils;
 use validaton_server::RequestBody;
 
@@ -20,6 +21,10 @@ async fn main() {
     // TODO: Wait for triton server to start up
     info!("Waiting for Triton server...");
     triton_client.wait_for_server_ready().await.unwrap();
+
+    // Download models
+
+    // Load models
 
     // TODO: Start tests
 

@@ -3,3 +3,7 @@
 
 # Mongo
 **/data/db**
+
+# Models
+models/triton/densenet_onnx/1
+models/triton/inception_graphdef/1
